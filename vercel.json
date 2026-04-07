@@ -6,8 +6,12 @@
       "destination": "/server/server.js"
     },
     {
-      "source": "/(.*)",
-      "destination": "/client/dist/$1"
+      "source": "/assets/(.*)",
+      "destination": "/client/dist/assets/$1"
+    },
+    {
+      "source": "/((?!api/|assets/).*)",
+      "destination": "/client/dist/index.html"
     }
   ]
 }

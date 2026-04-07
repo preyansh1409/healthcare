@@ -135,7 +135,7 @@ export default function Login() {
 
         {/* Staff Directory - Compact Grid */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem', maxHeight: 200, overflowY: 'hidden' }}>
-            {doctors.slice(0, 8).map(d => (
+            {Array.isArray(doctors) && doctors.slice(0, 8).map(d => (
                 <button
                     key={d.id}
                     onClick={() => { setForm({ email: d.email, password: 'Doctor@123' }); toast.success(`Acting as Dr. ${d.name.split(' ')[0]}`); }}

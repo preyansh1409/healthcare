@@ -49,17 +49,19 @@ const distPath = path.join(__dirname, '..', 'client', 'dist');
 // Serve static files if they exist
 app.use(express.static(distPath));
 
-// Only serve index.html for non-API routes (SPA support)
+// In production/Vercel, we don't serve index.html from here if vercel.json is doing its own rewrites.
+// We only keep this for local testing as a fallback.
 app.get('*', (req, res, next) => {
   if (req.path.startsWith('/api')) {
     return next();
   }
-  res.sendFile(path.join(distPath, 'index.html'), (err) => {
-    if (err) {
-      // If index.html doesn't exist, we fall through to the 404 handler
-      next();
-    }
-  });
+  if (!process.env.VERCEL) {
+    res.sendFile(path.join(distPath, 'index.html'), (err) => {
+      if (err) next();
+    });
+  } else {
+    next();
+  }
 });
 
 
