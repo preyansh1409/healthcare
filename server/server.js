@@ -3,10 +3,14 @@ require('./config/db'); // Initialize DB connection
 
 const PORT = process.env.PORT || 5000;
 
-server.listen(PORT, () => {
-  console.log(`🚀 Healthcare API Server running on http://localhost:${PORT}`);
-  console.log(`📡 Environment: ${process.env.NODE_ENV || 'development'}`);
-});
+module.exports = server;
+
+if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
+  server.listen(PORT, () => {
+    console.log(`🚀 Healthcare API Server running on http://localhost:${PORT}`);
+    console.log(`📡 Environment: ${process.env.NODE_ENV || 'development'}`);
+  });
+}
 
 server.on('error', (err) => {
   if (err.code === 'EADDRINUSE') {
