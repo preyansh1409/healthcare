@@ -9,10 +9,5 @@
       "source": "/(.*)",
       "destination": "/client/dist/$1"
     }
-  ],
-  "functions": {
-    "server/server.js": {
-      "runtime": "@vercel/node"
-    }
-  }
+  ]
 }
