@@ -1,0 +1,68 @@
+{
+  "name": "project---copy",
+  "version": "1.0.0",
+  "description": "A full-stack hospital management system built with **React.js**, **Node.js/Express**, and **MySQL (XAMPP)**.",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "client-install": "cd client && npm install",
+    "server-install": "cd server && npm install",
+    "install-all": "npm run client-install && npm run server-install",
+    "build-client": "cd client && npm run build",
+    "dev-client": "cd client && npm run dev",
+    "dev-server": "cd server && node server.js",
+    "server": "npm run dev-server",
+    "electron-dev": "cross-env NODE_ENV=development electron .",
+    "dev": "concurrently \"npm run dev-client\" \"npm run electron-dev\"",
+    "build": "npm run build-client && electron-builder"
+  },
+  "build": {
+    "appId": "com.hms.app",
+    "productName": "Healthcare Management System",
+    "directories": {
+      "output": "dist-electron"
+    },
+    "files": [
+      "main.js",
+      "package.json",
+      "client/dist/**/*",
+      "server/**/*"
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "cross-env": "^10.1.0",
+    "electron": "^41.1.1",
+    "electron-builder": "^26.8.1",
+    "electron-is-dev": "^3.0.1",
+    "electron-packager": "^17.1.2",
+    "electron-serve": "^3.0.1",
+    "wait-on": "^9.0.4"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "crypto-js": "^4.2.0",
+    "dotenv": "^17.4.0",
+    "express": "^5.2.1",
+    "express-validator": "^7.3.2",
+    "jsonwebtoken": "^9.0.3",
+    "mysql2": "^3.20.0",
+    "nodemailer": "^8.0.4",
+    "socket.io": "^4.8.3"
+  }
+}

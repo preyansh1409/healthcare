@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+client/node_modules/
+
+# Environment Variables
+.env
+client/.env
+
+# Build outputs
+dist/
+client/dist/
+dist-electron/
+dist-final/
+dist-packager/
+*.exe
+
+# System Files
+.DS_Store
+Thumbs.db
+*.log
+
+# Workspace
+.vscode/
+.idea/
+.gemini/
