@@ -2,10 +2,10 @@ const mysql = require('mysql2/promise');
 require('dotenv').config();
 
 const pool = mysql.createPool({
-  host: process.env.DB_HOST || 'localhost',
+  host: process.env.DB_HOST || 'gateway01.ap-southeast-1.prod.aws.tidbcloud.com',
   port: process.env.DB_PORT || 4000,
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '',
+  user: process.env.DB_USER || '2GKXcNaNXVwCPeQ.root',
+  password: process.env.DB_PASSWORD || 'adS87vr7msEcV8vS',
   database: process.env.DB_NAME || 'healthcare_db',
   waitForConnections: true,
   connectionLimit: 10,
