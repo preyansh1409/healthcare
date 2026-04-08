@@ -3,17 +3,22 @@ require('dotenv').config();
 
 const pool = mysql.createPool({
   host: process.env.DB_HOST || 'localhost',
+  port: process.env.DB_PORT || 4000,
   user: process.env.DB_USER || 'root',
   password: process.env.DB_PASSWORD || '',
   database: process.env.DB_NAME || 'healthcare_db',
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
+  ssl: {
+    minVersion: 'TLSv1.2',
+    rejectUnauthorized: true,
+  },
 });
 
 pool.getConnection()
   .then(async conn => {
-    console.log('✅ MySQL connected via XAMPP');
+    console.log('✅ Connected to TiDB Cloud / MySQL');
 
     // Auto-migration for schema updates
     try {
