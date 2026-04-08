@@ -16,17 +16,16 @@ const pool = mysql.createPool({
   },
 });
 
-pool.getConnection()
-  .then(async conn => {
-    console.log('✅ Connected to TiDB Cloud / MySQL');
+async function initDB() {
+  let conn;
+  try {
+    conn = await pool.getConnection();
+    console.log('✅ Connected to TiDB Cloud');
 
-    // AUTO-INSTALLER: Create all tables if they don't exist
-    try {
-      console.log('📦 Verifying Database Schema...');
-
-      // 1. Users table
-      await conn.query(`
-        CREATE TABLE IF NOT EXISTS users (
+    const tables = [
+      {
+        name: 'users',
+        sql: `CREATE TABLE IF NOT EXISTS users (
           id INT AUTO_INCREMENT PRIMARY KEY,
           name VARCHAR(100) NOT NULL,
           email VARCHAR(150) UNIQUE NOT NULL,
@@ -34,12 +33,11 @@ pool.getConnection()
           role ENUM('admin', 'doctor', 'receptionist', 'patient') NOT NULL,
           phone VARCHAR(20),
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-      `);
-
-      // 2. Doctors table
-      await conn.query(`
-        CREATE TABLE IF NOT EXISTS doctors (
+        )`
+      },
+      {
+        name: 'doctors',
+        sql: `CREATE TABLE IF NOT EXISTS doctors (
           id INT AUTO_INCREMENT PRIMARY KEY,
           user_id INT NOT NULL,
           specialization VARCHAR(100) DEFAULT 'General',
@@ -49,12 +47,11 @@ pool.getConnection()
           shift_end TIME DEFAULT '17:00:00',
           consultation_fee DECIMAL(10,2) DEFAULT 500.00,
           FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-        )
-      `);
-
-      // 3. Patients table
-      await conn.query(`
-        CREATE TABLE IF NOT EXISTS patients (
+        )`
+      },
+      {
+        name: 'patients',
+        sql: `CREATE TABLE IF NOT EXISTS patients (
           id INT AUTO_INCREMENT PRIMARY KEY,
           user_id INT NULL,
           name VARCHAR(100) NOT NULL,
@@ -66,12 +63,11 @@ pool.getConnection()
           address TEXT,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
-        )
-      `);
-
-      // 4. Appointments table
-      await conn.query(`
-        CREATE TABLE IF NOT EXISTS appointments (
+        )`
+      },
+      {
+        name: 'appointments',
+        sql: `CREATE TABLE IF NOT EXISTS appointments (
           id INT AUTO_INCREMENT PRIMARY KEY,
           patient_id INT NOT NULL,
           doctor_id INT NOT NULL,
@@ -82,23 +78,21 @@ pool.getConnection()
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           FOREIGN KEY (patient_id) REFERENCES patients(id),
           FOREIGN KEY (doctor_id) REFERENCES doctors(id)
-        )
-      `);
-
-      // 5. Doctor Leaves
-      await conn.query(`
-        CREATE TABLE IF NOT EXISTS doctor_leaves (
+        )`
+      },
+      {
+        name: 'doctor_leaves',
+        sql: `CREATE TABLE IF NOT EXISTS doctor_leaves (
           id INT AUTO_INCREMENT PRIMARY KEY,
           doctor_id INT NOT NULL,
           leave_date DATE NOT NULL,
           reason TEXT,
           FOREIGN KEY (doctor_id) REFERENCES doctors(id)
-        )
-      `);
-
-      // 6. Billing
-      await conn.query(`
-        CREATE TABLE IF NOT EXISTS billing (
+        )`
+      },
+      {
+        name: 'billing',
+        sql: `CREATE TABLE IF NOT EXISTS billing (
           id INT AUTO_INCREMENT PRIMARY KEY,
           patient_id INT NOT NULL,
           doctor_id INT,
@@ -107,23 +101,21 @@ pool.getConnection()
           payment_method VARCHAR(50),
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           FOREIGN KEY (patient_id) REFERENCES patients(id)
-        )
-      `);
-
-      // 7. Blockchain Ledger
-      await conn.query(`
-        CREATE TABLE IF NOT EXISTS blockchain_ledger (
+        )`
+      },
+      {
+        name: 'blockchain_ledger',
+        sql: `CREATE TABLE IF NOT EXISTS blockchain_ledger (
           id INT PRIMARY KEY,
           previous_hash VARCHAR(64) NOT NULL,
           hash VARCHAR(64) NOT NULL,
           timestamp VARCHAR(50) NOT NULL,
           data JSON NOT NULL
-        )
-      `);
-
-      // 8. OTP Verifications
-      await conn.query(`
-        CREATE TABLE IF NOT EXISTS otp_verifications (
+        )`
+      },
+      {
+        name: 'otp_verifications',
+        sql: `CREATE TABLE IF NOT EXISTS otp_verifications (
           id INT AUTO_INCREMENT PRIMARY KEY,
           phone VARCHAR(20),
           email VARCHAR(150),
@@ -131,18 +123,27 @@ pool.getConnection()
           expires_at TIMESTAMP NOT NULL,
           is_verified TINYINT(1) DEFAULT 0,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-      `);
+        )`
+      }
+    ];
 
-      console.log('✅ Database Schema Verified & Synchronized');
-    } catch (migErr) {
-      console.error('⚠️ Schema Initialization Error:', migErr.message);
+    for (const table of tables) {
+      try {
+        await conn.query(table.sql);
+        console.log(`📦 Table '${table.name}' verified/created`);
+      } catch (err) {
+        console.warn(`⚠️ Error creating table '${table.name}':`, err.message);
+      }
     }
 
-    conn.release();
-  })
-  .catch(err => {
-    console.error('❌ DB connection failed:', err.message);
-  });
+  } catch (err) {
+    console.error('❌ DB Initialization Failed:', err.message);
+  } finally {
+    if (conn) conn.release();
+  }
+}
+
+// Start initialization immediately
+initDB();
 
 module.exports = pool;
