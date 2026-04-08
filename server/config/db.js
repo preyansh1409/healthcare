@@ -20,9 +20,108 @@ pool.getConnection()
   .then(async conn => {
     console.log('✅ Connected to TiDB Cloud / MySQL');
 
-    // Auto-migration for schema updates
+    // AUTO-INSTALLER: Create all tables if they don't exist
     try {
-      // Create OTP table if not exists
+      console.log('📦 Verifying Database Schema...');
+
+      // 1. Users table
+      await conn.query(`
+        CREATE TABLE IF NOT EXISTS users (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          name VARCHAR(100) NOT NULL,
+          email VARCHAR(150) UNIQUE NOT NULL,
+          password VARCHAR(255) NOT NULL,
+          role ENUM('admin', 'doctor', 'receptionist', 'patient') NOT NULL,
+          phone VARCHAR(20),
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+
+      // 2. Doctors table
+      await conn.query(`
+        CREATE TABLE IF NOT EXISTS doctors (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          user_id INT NOT NULL,
+          specialization VARCHAR(100) DEFAULT 'General',
+          department VARCHAR(100) DEFAULT 'General',
+          available TINYINT(1) DEFAULT 1,
+          shift_start TIME DEFAULT '09:00:00',
+          shift_end TIME DEFAULT '17:00:00',
+          consultation_fee DECIMAL(10,2) DEFAULT 500.00,
+          FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        )
+      `);
+
+      // 3. Patients table
+      await conn.query(`
+        CREATE TABLE IF NOT EXISTS patients (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          user_id INT NULL,
+          name VARCHAR(100) NOT NULL,
+          phone VARCHAR(20),
+          email VARCHAR(150),
+          birth_date DATE,
+          blood_group VARCHAR(10),
+          gender ENUM('Male', 'Female', 'Other'),
+          address TEXT,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+        )
+      `);
+
+      // 4. Appointments table
+      await conn.query(`
+        CREATE TABLE IF NOT EXISTS appointments (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          patient_id INT NOT NULL,
+          doctor_id INT NOT NULL,
+          appointment_date DATE NOT NULL,
+          appointment_time TIME NOT NULL,
+          status ENUM('pending', 'confirmed', 'completed', 'cancelled', 'requested', 'checked_in') DEFAULT 'pending',
+          reason TEXT,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (patient_id) REFERENCES patients(id),
+          FOREIGN KEY (doctor_id) REFERENCES doctors(id)
+        )
+      `);
+
+      // 5. Doctor Leaves
+      await conn.query(`
+        CREATE TABLE IF NOT EXISTS doctor_leaves (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          doctor_id INT NOT NULL,
+          leave_date DATE NOT NULL,
+          reason TEXT,
+          FOREIGN KEY (doctor_id) REFERENCES doctors(id)
+        )
+      `);
+
+      // 6. Billing
+      await conn.query(`
+        CREATE TABLE IF NOT EXISTS billing (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          patient_id INT NOT NULL,
+          doctor_id INT,
+          total_amount DECIMAL(10,2) NOT NULL,
+          status ENUM('paid', 'pending', 'cancelled') DEFAULT 'pending',
+          payment_method VARCHAR(50),
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (patient_id) REFERENCES patients(id)
+        )
+      `);
+
+      // 7. Blockchain Ledger
+      await conn.query(`
+        CREATE TABLE IF NOT EXISTS blockchain_ledger (
+          id INT PRIMARY KEY,
+          previous_hash VARCHAR(64) NOT NULL,
+          hash VARCHAR(64) NOT NULL,
+          timestamp VARCHAR(50) NOT NULL,
+          data JSON NOT NULL
+        )
+      `);
+
+      // 8. OTP Verifications
       await conn.query(`
         CREATE TABLE IF NOT EXISTS otp_verifications (
           id INT AUTO_INCREMENT PRIMARY KEY,
@@ -31,55 +130,18 @@ pool.getConnection()
           otp_code VARCHAR(6) NOT NULL,
           expires_at TIMESTAMP NOT NULL,
           is_verified TINYINT(1) DEFAULT 0,
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          INDEX (phone),
-          INDEX (email)
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
       `);
 
-      // OTP email support
-      await conn.query(`
-        ALTER TABLE otp_verifications 
-        ADD COLUMN IF NOT EXISTS email VARCHAR(150),
-        MODIFY COLUMN phone VARCHAR(20) NULL,
-        ADD INDEX IF NOT EXISTS idx_email (email)
-      `);
-
-      // Patient details support
-      await conn.query(`
-        ALTER TABLE patients 
-        ADD COLUMN IF NOT EXISTS birth_date DATE NULL,
-        ADD COLUMN IF NOT EXISTS email VARCHAR(150) NULL,
-        ADD COLUMN IF NOT EXISTS blood_group VARCHAR(10) NULL
-      `);
-
-      // Appointment status update for patient requests
-      await conn.query(`
-        ALTER TABLE appointments 
-        MODIFY COLUMN status ENUM('pending', 'confirmed', 'completed', 'cancelled', 'requested', 'checked_in') DEFAULT 'pending'
-      `);
-
-      // Billing doctor tracking
-      await conn.query(`
-        ALTER TABLE billing 
-        ADD COLUMN IF NOT EXISTS doctor_id INT NULL,
-        ADD INDEX IF NOT EXISTS idx_doctor (doctor_id)
-      `);
-
-      console.log('✅ Database schema verified (OTP email, Birth Date & Appointment Requests)');
+      console.log('✅ Database Schema Verified & Synchronized');
     } catch (migErr) {
-      const fs = require('fs');
-      fs.appendFileSync('db_error_log.txt', `[${new Date().toISOString()}] Migration error: ${migErr.message}\n`);
-      if (!['ER_DUP_FIELDNAME', 'ER_DUP_KEYNAME', 'ER_CANT_DROP_FIELD_OR_KEY'].includes(migErr.code)) {
-        console.warn('⚠️  Auto-migration notice:', migErr.message);
-      }
+      console.error('⚠️ Schema Initialization Error:', migErr.message);
     }
 
     conn.release();
   })
   .catch(err => {
-    const fs = require('fs');
-    fs.appendFileSync('db_error_log.txt', `[${new Date().toISOString()}] DB Connection Failed: ${err.message}\n`);
     console.error('❌ DB connection failed:', err.message);
   });
 
