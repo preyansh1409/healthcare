@@ -2,6 +2,11 @@
   "version": 2,
   "trailingSlash": false,
   "cleanUrls": true,
+  "functions": {
+    "api/index.js": {
+      "runtime": "@vercel/node"
+    }
+  },
   "rewrites": [
     {
       "source": "/api/(.*)",
