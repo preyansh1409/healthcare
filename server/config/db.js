@@ -1,4 +1,5 @@
 const mysql = require('mysql2/promise');
+const bcrypt = require('bcryptjs');
 require('dotenv').config();
 
 const pool = mysql.createPool({
@@ -135,6 +136,18 @@ async function initDB() {
       await conn.query(table.sql);
     }
 
+    // AUTO-PROVISION: Create default admin if no users exist
+    const [userCount] = await conn.query('SELECT COUNT(*) as count FROM users');
+    if (userCount[0].count === 0) {
+      console.log('👤 No users found. Creating default admin account...');
+      const hashedPassword = await bcrypt.hash('admin123', 10);
+      await conn.query(
+        'INSERT INTO users (name, email, password, role, phone) VALUES (?, ?, ?, ?, ?)',
+        ['System Administrator', 'admin@hms.com', hashedPassword, 'admin', '0000000000']
+      );
+      console.log('✅ Default Admin created: admin@hms.com / admin123');
+    }
+
     isInitialized = true;
     console.log('✅ Database Schema Verified & Synchronized');
   } catch (err) {
@@ -145,7 +158,6 @@ async function initDB() {
   }
 }
 
-// Export both the pool and the init function
 module.exports = {
   pool,
   query: (...args) => pool.query(...args),
