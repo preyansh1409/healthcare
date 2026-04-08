@@ -23,6 +23,28 @@ app.use(cors({ origin: allowedOrigins, credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Database Initialization Middleware (Ensures tables exist before any request)
+const { initDB } = require('./config/db');
+app.use(async (req, res, next) => {
+  try {
+    await initDB();
+    next();
+  } catch (err) {
+    console.error('DB Init Error:', err.message);
+    res.status(500).json({ success: false, message: "Database setup in progress or failed. Please refresh in 10 seconds." });
+  }
+});
+
+// Manual setup trigger
+app.get('/api/install', async (req, res) => {
+  try {
+    await initDB();
+    res.json({ success: true, message: "Database initialized successfully" });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 // Routes
 const authRoutes = require('./routes/authRoutes');
 const appointmentRoutes = require('./routes/appointmentRoutes');

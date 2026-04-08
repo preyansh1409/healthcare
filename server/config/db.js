@@ -16,7 +16,11 @@ const pool = mysql.createPool({
   },
 });
 
+let isInitialized = false;
+
 async function initDB() {
+  if (isInitialized) return;
+  
   let conn;
   try {
     conn = await pool.getConnection();
@@ -128,22 +132,22 @@ async function initDB() {
     ];
 
     for (const table of tables) {
-      try {
-        await conn.query(table.sql);
-        console.log(`📦 Table '${table.name}' verified/created`);
-      } catch (err) {
-        console.warn(`⚠️ Error creating table '${table.name}':`, err.message);
-      }
+      await conn.query(table.sql);
     }
 
+    isInitialized = true;
+    console.log('✅ Database Schema Verified & Synchronized');
   } catch (err) {
     console.error('❌ DB Initialization Failed:', err.message);
+    throw err;
   } finally {
     if (conn) conn.release();
   }
 }
 
-// Start initialization immediately
-initDB();
-
-module.exports = pool;
+// Export both the pool and the init function
+module.exports = {
+  pool,
+  query: (...args) => pool.query(...args),
+  initDB
+};

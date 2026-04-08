@@ -1,4 +1,4 @@
-const pool = require('../config/db');
+const { pool } = require('../config/db');
 
 // @GET /api/doctors
 const getAllDoctors = async (req, res) => {

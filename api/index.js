@@ -1,5 +1,5 @@
 const { app } = require('../server/app.js');
 require('../server/config/db.js');
 
-// Vercel expects the express instance to be the default export
+// Ver: 1.2.0-STABLE
 module.exports = app;

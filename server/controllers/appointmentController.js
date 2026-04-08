@@ -1,4 +1,4 @@
-const pool = require('../config/db');
+const { pool } = require('../config/db');
 const MedicalBlock = require('../utils/blockchain');
 
 // @GET /api/appointments

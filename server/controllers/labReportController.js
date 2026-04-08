@@ -1,4 +1,4 @@
-const db = require('../config/db');
+const { pool } = require('../config/db');
 
 // --- Mock AI Lab Analysis Function ---
 const performAIAnalysis = (reportType, details) => {
@@ -57,7 +57,7 @@ exports.uploadReport = async (req, res) => {
   if (!patient_id || !report_type) return res.status(400).json({ success: false, message: 'Missing required data' });
 
   try {
-    const [result] = await db.query(
+    const [result] = await pool.query(
       `INSERT INTO lab_reports (patient_id, report_type, report_date, details, uploaded_by, status) VALUES (?, ?, ?, ?, ?, 'pending')`,
       [patient_id, report_type, report_date || new Date().toISOString().split('T')[0], details, uploaded_by]
     );
@@ -72,7 +72,7 @@ const { analyzeReportWithAI } = require('../utils/ai');
 exports.analyzeReport = async (req, res) => {
   const { id } = req.params;
   try {
-    const [reports] = await db.query('SELECT * FROM lab_reports WHERE id = ?', [id]);
+    const [reports] = await pool.query('SELECT * FROM lab_reports WHERE id = ?', [id]);
     if (reports.length === 0) return res.status(404).json({ success: false, message: 'Report not found' });
     
     const report = reports[0];
@@ -86,7 +86,7 @@ exports.analyzeReport = async (req, res) => {
       aiResult = await analyzeReportWithAI(report.report_type, report.details);
     }
 
-    await db.query(
+    await pool.query(
       'UPDATE lab_reports SET ai_summary = ?, ai_anomalies = ?, status = \'analyzed\' WHERE id = ?',
       [aiResult.summary, JSON.stringify(aiResult.anomalies), id]
     );
@@ -102,7 +102,7 @@ exports.analyzeReport = async (req, res) => {
 exports.getPatientReports = async (req, res) => {
   const { patientId } = req.params;
   try {
-    const [reports] = await db.query(
+    const [reports] = await pool.query(
       'SELECT lr.*, u.name as uploader_name FROM lab_reports lr LEFT JOIN users u ON lr.uploaded_by = u.id WHERE lr.patient_id = ? ORDER BY lr.report_date DESC',
       [patientId]
     );
@@ -118,7 +118,7 @@ exports.getPatientReports = async (req, res) => {
 exports.getReportById = async (req, res) => {
   const { id } = req.params;
   try {
-    const [reports] = await db.query('SELECT * FROM lab_reports WHERE id = ?', [id]);
+    const [reports] = await pool.query('SELECT * FROM lab_reports WHERE id = ?', [id]);
     if (reports.length === 0) return res.status(404).json({ success: false, message: 'Report not found' });
     
     const report = reports[0];
