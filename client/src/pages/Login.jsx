@@ -6,8 +6,9 @@ import toast from 'react-hot-toast';
 import { Heart, Eye, EyeOff, Lock, Mail, Loader } from 'lucide-react';
 
 const demoCredentials = [
-  { role: 'Receptionist', email: 'admin@hospital.com', password: 'Admin@123', color: '#6366f1' },
-  { role: 'Doctor', email: 'doctor@hospital.com', password: 'Doctor@123', color: '#0ea5e9' },
+  { role: 'Admin', email: 'admin@hospital.com', password: 'admin123', color: '#ef4444' },
+  { role: 'Receptionist', email: 'nurse@hospital.com', password: 'receptionist123', color: '#6366f1' },
+  { role: 'Doctor', email: 'doctor@hospital.com', password: 'doctor123', color: '#0ea5e9' },
 ];
 
 export default function Login() {
@@ -138,7 +139,7 @@ export default function Login() {
             {Array.isArray(doctors) && doctors.slice(0, 8).map(d => (
                 <button
                     key={d.id}
-                    onClick={() => { setForm({ email: d.email, password: 'Doctor@123' }); toast.success(`Acting as Dr. ${d.name.split(' ')[0]}`); }}
+                    onClick={() => { setForm({ email: d.email, password: 'doctor123' }); toast.success(`Acting as Dr. ${d.name.split(' ')[0]}`); }}
                     style={{
                         padding: '0.75rem 0.5rem', borderRadius: 14, border: '1px solid rgba(255,255,255,0.1)',
                         background: 'rgba(255,255,255,0.03)', cursor: 'pointer', transition: 'all 0.2s',
