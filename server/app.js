@@ -11,15 +11,16 @@ const server = http.createServer(app);
 const allowedOrigins = [
   process.env.CLIENT_URL || 'http://localhost:5173', 
   'http://localhost:5174',
-  'http://localhost:5000' // Desktop app location
+  'http://localhost:5000', // Desktop app location
+  /\.vercel\.app$/ // Allow all Vercel deployments
 ];
 
 const io = new Server(server, {
-  cors: { origin: allowedOrigins, methods: ['GET', 'POST'] }
+  cors: { origin: "*", methods: ['GET', 'POST'] }
 });
 
 // Middleware
-app.use(cors({ origin: allowedOrigins, credentials: true }));
+app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

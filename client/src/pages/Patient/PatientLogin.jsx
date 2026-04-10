@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import axios from 'axios';
+import { sendOTP, verifyOTP } from '../../services/api';
 import toast from 'react-hot-toast';
 import {
   Heart, Key, Mail, ArrowLeft, Loader, CheckCircle2,
@@ -41,7 +41,7 @@ export default function PatientLogin() {
 
     setLoading(true);
     try {
-      const { data } = await axios.post('http://localhost:5000/api/auth/send-otp', { email });
+      const { data } = await sendOTP({ email });
       setStep('otp');
       setTimer(30);
       toast.success(data.message, { duration: 6000 });
@@ -61,7 +61,7 @@ export default function PatientLogin() {
 
     setLoading(true);
     try {
-      const { data } = await axios.post('http://localhost:5000/api/auth/verify-otp', { email, otp });
+      const { data } = await verifyOTP({ email, otp });
 
       if (data.requiresProfileSelection) {
         setProfiles(data.profiles);

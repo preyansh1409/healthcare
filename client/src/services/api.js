@@ -34,6 +34,8 @@ api.interceptors.response.use(
 // ─── Auth ─────────────────────────────────────
 export const login = (data) => api.post('/auth/login', data);
 export const register = (data) => api.post('/auth/register', data);
+export const sendOTP = (data) => api.post('/auth/send-otp', data);
+export const verifyOTP = (data) => api.post('/auth/verify-otp', data);
 export const getMe = () => api.get('/auth/me');
 export const changePassword = (data) => api.put('/auth/change-password', data);
 export const getLinkedProfiles = () => api.get('/auth/profiles');
