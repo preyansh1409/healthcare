@@ -4,10 +4,6 @@
   "trailingSlash": false,
   "rewrites": [
     {
-      "source": "/api/:match*",
-      "destination": "/api/index.js"
-    },
-    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
