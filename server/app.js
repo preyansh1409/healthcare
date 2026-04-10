@@ -32,7 +32,10 @@ app.use(async (req, res, next) => {
     next();
   } catch (err) {
     console.error('DB Init Error:', err.message);
-    res.status(500).json({ success: false, message: "Database setup in progress or failed. Please refresh in 10 seconds." });
+    res.status(500).json({ 
+      success: false, 
+      message: `Database connection failed: ${err.message}. Check your Vercel Environment Variables and TiDB IP Access List (allow 0.0.0.0/0).` 
+    });
   }
 });
 
