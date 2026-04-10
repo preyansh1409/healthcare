@@ -73,7 +73,7 @@ app.use('/api', apiRouter);
 app.use(apiRouter); // Fallback for proxied requests where /api is stripped
 
 // Add these lines for hosting the frontend
-const distPath = path.join(__dirname, '..', 'client', 'dist');
+const distPath = path.join(__dirname, '..', 'dist');
 
 // Serve static files if they exist
 app.use(express.static(distPath));
