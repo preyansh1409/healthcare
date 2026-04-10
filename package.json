@@ -1,6 +1,9 @@
 {
   "name": "project---copy",
   "version": "1.0.0",
+  "workspaces": [
+    "client"
+  ],
   "description": "A full-stack hospital management system built with **React.js**, **Node.js/Express**, and **MySQL (XAMPP)**.",
   "main": "main.js",
   "engines": {
