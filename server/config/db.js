@@ -164,11 +164,21 @@ async function initDB() {
 
     // BLOCKCHAIN
     await conn.query(`CREATE TABLE IF NOT EXISTS blockchain_ledger (
-      id INT PRIMARY KEY,
+      id INT AUTO_INCREMENT PRIMARY KEY,
       previous_hash VARCHAR(64) NOT NULL,
       hash VARCHAR(64) NOT NULL,
       timestamp VARCHAR(50) NOT NULL,
       data JSON NOT NULL
+    )`);
+
+    // DOCTOR LEAVES
+    await conn.query(`CREATE TABLE IF NOT EXISTS doctor_leaves (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      doctor_id INT NOT NULL,
+      leave_date DATE NOT NULL,
+      reason TEXT,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (doctor_id) REFERENCES doctors(id) ON DELETE CASCADE
     )`);
 
     // AUTO-PROVISION: Create default admin if no users exist

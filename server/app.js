@@ -57,14 +57,20 @@ const labReportRoutes = require('./routes/labReportRoutes');
 
 
 const path = require('path');
-// ... other routes ...
-app.use('/api/auth', authRoutes);
-app.use('/api/appointments', appointmentRoutes);
-app.use('/api/doctors', doctorRoutes);
-app.use('/api/patients', patientRoutes);
-app.use('/api/admin', adminRoutes);
-app.use('/api/billing', billingRoutes);
-app.use('/api/lab-reports', labReportRoutes);
+// Define an internal router for all API endpoints
+const apiRouter = express.Router();
+
+apiRouter.use('/auth', authRoutes);
+apiRouter.use('/appointments', appointmentRoutes);
+apiRouter.use('/doctors', doctorRoutes);
+apiRouter.use('/patients', patientRoutes);
+apiRouter.use('/admin', adminRoutes);
+apiRouter.use('/billing', billingRoutes);
+apiRouter.use('/lab-reports', labReportRoutes);
+
+// Mount the API router at both root and /api to ensure Vercel/proxies never 404
+app.use('/api', apiRouter);
+app.use(apiRouter); // Fallback for proxied requests where /api is stripped
 
 // Add these lines for hosting the frontend
 const distPath = path.join(__dirname, '..', 'client', 'dist');

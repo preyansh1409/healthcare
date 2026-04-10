@@ -195,6 +195,25 @@ CREATE TABLE IF NOT EXISTS otp_verifications (
   INDEX (expires_at)
 );
 
+-- ─── DOCTOR LEAVES ────────────────────────────
+CREATE TABLE IF NOT EXISTS doctor_leaves (
+  id          INT AUTO_INCREMENT PRIMARY KEY,
+  doctor_id   INT NOT NULL,
+  leave_date  DATE NOT NULL,
+  reason      TEXT,
+  created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (doctor_id) REFERENCES doctors(id) ON DELETE CASCADE
+);
+
+-- ─── BLOCKCHAIN LEDGER ────────────────────────
+CREATE TABLE IF NOT EXISTS blockchain_ledger (
+  id            INT AUTO_INCREMENT PRIMARY KEY,
+  previous_hash VARCHAR(64) NOT NULL,
+  hash          VARCHAR(64) NOT NULL,
+  timestamp     VARCHAR(50) NOT NULL,
+  data          JSON NOT NULL
+);
+
 -- =============================================
 -- SEED DATA (Demo users with hashed passwords)
 -- Password for all: see notes below
